@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+/usr/local/bin/my_tools/abstract_tools/change_proj_internal $1
+
+zsh -l

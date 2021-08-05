@@ -1,0 +1,79 @@
+#!/usr/bin/python3
+import sys
+import os
+import shutil
+
+env_arg = sys.argv[1].upper()
+env_prefix = "CHNG_PROJ_"
+src_path = ""
+dst_path = "/usr/local/bin/chng_proj_current"
+
+
+# unlink and remove the env_tools folder
+def unlink_all():
+	
+	try:
+		if os.path.islink(dst_path):
+			os.unlink(dst_path)
+	except:
+		pass
+
+	if os.path.isdir(dst_path):
+		shutil.rmtree(dst_path)
+	
+	if os.path.isfile(dst_path):
+		os.remove(dst_path)
+
+
+# Create a placeholder folder that contains None
+def create_unlink():
+	os.mkdir(dst_path)
+	gen_details("NONE")
+
+
+# Generates the env_details file that I use for integration with p10k
+def gen_details(name):
+	f = open(dst_path + "/env_details", "w")
+	f.write(f'CHNG_PROJ_ENV_NAME="{name}"')
+	f.close()
+
+
+# Check to see if the environment variable requested exists
+def check_env_var():
+	src_path = os.getenv(f"{env_prefix}{env_arg}")
+
+	if src_path != None:
+		return True
+
+	return False
+
+
+# Generate new symlinks to switch between env's
+def gen_sym():
+	src_path = os.getenv(f"{env_prefix}{env_arg}")
+	os.symlink(src_path, dst_path)
+	print(f"Creating symlink: {src_path} -> {dst_path}")
+	gen_details(env_arg)
+
+
+if __name__ == "__main__":
+
+	# Create DIR if it doesn't exist
+	if not os.path.exists(dst_path):
+		unlink_all()
+		create_unlink()
+
+
+	if env_arg != "UNLINK":
+		if check_env_var():
+			unlink_all()
+			gen_sym()
+		else:
+			print(f"The environment variable '{env_prefix}{env_arg}' has not been defined!")
+
+	else:
+		unlink_all()
+		create_unlink()
+
+
+

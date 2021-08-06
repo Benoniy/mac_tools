@@ -5,8 +5,8 @@ import shutil
 
 env_arg = sys.argv[1].upper()
 env_prefix = "CHNG_PROJ_"
-src_path = ""
 dst_path = "/usr/local/bin/chng_proj_current"
+folder = False
 
 
 # unlink and remove the env_tools folder
@@ -40,21 +40,17 @@ def gen_details(name):
 
 def check_folder():
 	src_path = os.getenv(f"{env_prefix}ROOT") + "/" + env_arg
-	if os.path.exists(src_path):
-		return True
-	return False 
+	return src_path
 
 # Check to see if the environment variable requested exists
 def check_env_var():
 	src_path = os.getenv(f"{env_prefix}{env_arg}")
-	if src_path != None:
-		return True
-	return False
+	return src_path
 
 
 # Generate new symlinks to switch between env's
-def gen_sym():
-	src_path = os.getenv(f"{env_prefix}{env_arg}")
+def gen_sym(src_path):
+
 	os.symlink(src_path, dst_path)
 	print(f"Creating symlink: {src_path} -> {dst_path}")
 	gen_details(env_arg)
@@ -69,11 +65,17 @@ if __name__ == "__main__":
 
 
 	if env_arg != "UNLINK":
-		if check_folder() or check_env_var():
+		src = check_folder()
+		if src != "None":
 			unlink_all()
-			gen_sym()
+			gen_sym(src)
 		else:
-			print(f"The environment variable '{env_prefix}{env_arg}' has not been defined!")
+			src = check_env_var()
+			if src != "None":
+				unlink_all()
+				gen_sym(src)
+			else:
+				print(f"The environment variable '{env_prefix}{env_arg}' has not been defined!")
 
 	else:
 		unlink_all()

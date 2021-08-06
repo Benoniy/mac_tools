@@ -33,18 +33,22 @@ def create_unlink():
 
 # Generates the env_details file that I use for integration with p10k
 def gen_details(name):
-	f = open(dst_path + "/env_details", "w")
+	f = open(dst_path + "/.env_details", "w")
 	f.write(f'CHNG_PROJ_ENV_NAME="{name}"')
 	f.close()
 
 
+def check_folder():
+	src_path = os.getenv(f"{env_prefix}ROOT") + "/" + env_arg
+	if os.path.exists(src_path):
+		return True
+	return False 
+
 # Check to see if the environment variable requested exists
 def check_env_var():
 	src_path = os.getenv(f"{env_prefix}{env_arg}")
-
 	if src_path != None:
 		return True
-
 	return False
 
 
@@ -65,7 +69,7 @@ if __name__ == "__main__":
 
 
 	if env_arg != "UNLINK":
-		if check_env_var():
+		if check_folder() or check_env_var():
 			unlink_all()
 			gen_sym()
 		else:

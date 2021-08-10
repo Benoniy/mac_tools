@@ -68,7 +68,6 @@ def get_proj(name):
 @click.argument('name')
 def switch_proj(name):
 	name = name.upper()
-	print(name)
 	# Create DIR if it doesn't exist
 	if not os.path.exists(dst_path):
 		log.info(f"Destination path does not exist, creating unlink")

@@ -1,0 +1,144 @@
+#!/usr/bin/python3
+import sys
+import os
+import shutil
+import logging as log
+import re
+import click
+
+import manip_files
+import manip_evars
+
+env_prefix = "CHNG_PROJ_"
+current_proj = os.getenv(f"{env_prefix}ENV_NAME")
+root_dir = os.getenv(f"{env_prefix}ROOT")
+dst_path = "/usr/local/bin/chng_proj_current"
+		
+
+# Enables CLI integration using click
+@click.group()
+@click.option("-v", is_flag=True, help="Enable verbose output.")
+def cli(v):
+	if v:
+		enable_verbose()
+	pass
+
+# Print verbose output to the console
+def enable_verbose():
+	log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+	log.info("Verbose output initiated")
+
+
+# Create a project
+@cli.command("create", help="Create a new project.")
+@click.argument("name")
+def create_proj(name):
+	name = name.upper()
+	path = root_dir + "/" + name
+	unlink_all(path)
+	log.info(f"Creating '{name}' project")
+	os.mkdir(path)
+	manip_files.gen_details(path, name)
+
+# Delete a project
+@cli.command("delete", help="Delete a project.")
+@click.argument('name')
+def delete_proj(name):
+	name = name.upper()
+	path = get_proj(name)
+	if path != None:
+		unlink_all(path)
+
+# Returns the location of a project whether it is an environment variable or not
+def get_proj(name):
+	name = name.upper()
+	src = manip_files.get_folder(root_dir, name)
+	if src != "None":
+		log.info("Environment source is located in CHNG_PROJ_ROOT")
+		return src
+
+	src = manip_evars.get_env_var(env_prefix, name)
+	if src != "None":
+		log.info("Environment source has been defined as an environment variable")
+
+	return src
+
+# Find and then link a project
+@cli.command('change', help="Switch to a project.")
+@click.argument('name')
+def switch_proj(name):
+	name = name.upper()
+	print(name)
+	# Create DIR if it doesn't exist
+	if not os.path.exists(dst_path):
+		log.info(f"Destination path does not exist, creating unlink")
+		unlink_all(dst_path)
+		create_proj(name)
+
+	if name != "UNLINK":
+		src = get_proj(name)
+		if src != "None":	
+			unlink_all(dst_path)
+			gen_sym(src, name)
+		else:
+			print(f"The project '{name}' has not been created!")
+
+	else:
+		log.info("Unlinking from all environments")
+		unlink_all(dst_path)
+		create_proj(name)
+		gen_sym(root_dir + "/" + name, name)
+
+
+# List all available projects
+@cli.command("list", help="List all available projects.")
+def list_proj():
+	myPattern = re.compile(r'{prefix}\w+'.format(prefix=env_prefix))
+	my_env_variables = {key.replace(env_prefix,''):val for key, val in os.environ.items() if myPattern.match(key)}
+	print("\nPrinting environment variables:")
+	for k, v in my_env_variables.items():
+		print(f'{env_prefix}{k}="{v}"')
+
+	print("\nPrinting environment folders:")
+	path = root_dir
+	my_envs = os.listdir(path)
+	for f in my_envs:
+		if os.path.isdir(path + f"/{f}"):
+			print(f)
+
+
+# unlink and delete a folder
+def unlink_all(path):
+	try:
+		if os.path.islink(path):
+			log.info(f"Path is already linked: {os.readlink(path)}")
+			log.info("Unlinking")
+			os.unlink(path)
+	except:
+		pass
+
+	manip_files.del_dir(path)
+
+
+# Generate new symlinks to switch between env's
+def gen_sym(src_path, name):
+	log.info(f"Creating symlink: {src_path} -> {dst_path}")
+	os.symlink(src_path, dst_path)
+	manip_files.gen_details(src_path, name)
+
+
+if __name__ == "__main__":
+	cli(prog_name="chproj")
+
+
+
+		
+
+
+
+
+
+	
+
+
+

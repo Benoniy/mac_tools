@@ -1,6 +1,6 @@
 ### What are these files?
 
-* `change_proj <project>` - Runs `change_proj_internal` and then refreshes the shell
+* `chproj <project>` - Runs `chproj_internal` and then refreshes the shell
 
 * `change_env` - Initiates a pyenv local <folder_name> allowing you to use venvs that use the names of your folders
 
@@ -11,14 +11,14 @@ Abstract tools:
 
 ### change_proj_internal:
 
-* `change_proj_internal` - A python script that changes your workspaces by creating and destroying symlinks to folders.  
-* You should use `change_proj` instead because this wont work by itself with p10k
+* `chproj_internal` - A python script that changes your workspaces by creating and destroying symlinks to folders.  
+* You should use `chproj` instead because this wont work by itself with p10k
 
 
 Setup:  
 1. Add the following to your .zprofile to set where you will store your environments:  
    ```
-   export CHNJ_PROJ_ROOT="<path to folder>"
+   export CHNG_PROJ_ROOT="<path to folder>"
    ```
 2. If you want to specify folders outside of this root folder then you must use an environment variable in .zprofile:
    ```
@@ -31,11 +31,11 @@ Setup:
 4. At this point you can use the script to change environments:
     * If you made a folder in the environment root folder then you use the name as an argument:
     	```
-    	change_proj <folder name>
+    	chproj <folder name>
     	```
     * If you used an environment variable then you can use the <NAME> you specified:
     	```
-    	change_proj <NAME>
+    	chproj <NAME>
     	```
 
 

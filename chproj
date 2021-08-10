@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+/usr/local/bin/my_tools/abstract_tools/chproj_internal "$@"
+
+zsh -l
